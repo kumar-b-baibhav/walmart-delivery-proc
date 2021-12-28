@@ -3,7 +3,6 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-            bat 'rmdir walmart-delivery-proc'
 	    bat 'git clone -b master https://github.com/kumar-b-baibhav/walmart-delivery-proc.git walmart-delivery-proc'
       }
     }
