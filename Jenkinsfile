@@ -1,16 +1,19 @@
 pipeline {
   agent any
   stages {
-    stage('Checkout') {
+    stage('Code Checkout') {
       steps {
-	    bat 'git clone -b master https://github.com/kumar-b-baibhav/walmart-delivery-proc.git walmart-delivery-proc'
+	    git credentialsId: '4b22c39f-9efb-4a4f-9662-d23339dc978a', url: 'https://github.com/kumar-b-baibhav/book-my-holiday-flights-sys'
       }
     }
     stage('Build') {
       steps {
-            dir('.\\walmart-delivery-proc') {
-                bat 'mvn clean package deploy -DskipMunitTests -DmuleDeploy -DmuleVersion=4.4.0 -DgrantType="client_credentials" -DclientId=5fe6d27bef4b440bb7472991e4546574 -DclientSecret=ad896cb0490a4c4296D5A5426A7A49E7 -DapplicationName=walmart-delivery-proc-api -Denvironment=Sandbox -DbusinessGroup="Apisero Inc" -DworkerType=MICRO '
-			}
+            bat 'mvn clean package'
+      }
+    }
+    stage('Deploy') {
+      steps {
+            bat 'mvn deploy -DskipMunitTests -DmuleDeploy -DmuleVersion=4.4.0 -DgrantType="client_credentials" -DclientId=5fe6d27bef4b440bb7472991e4546574 -DclientSecret=ad896cb0490a4c4296D5A5426A7A49E7 -DapplicationName=walmart-delivery-proc-api -Denvironment=Sandbox -DbusinessGroup="Apisero Inc" -DworkerType=MICRO '
       }
     }
   }
