@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_eb631e04_f149_4912_a706_a2376d2c9311_Output_Variables_storeDetails = Any
+

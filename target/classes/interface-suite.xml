@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="interface-suite.xml" />
+	<munit:test name="post:\product\delivery-detail\process:application\json:delivery-proc-api-config-test-success" doc:id="ee19d1b1-ec3d-46a1-9d82-cbd5b4f51b03" >
+		<munit:behavior >
+			<munit:set-event doc:name="Set Input" doc:id="2ebe9f40-6fb0-47b0-a0b9-aba026402052" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://postproductdeliverydetailprocessapplicationjsondeliveryprocapiconfigtestsuccess\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				<munit:attributes value="#[readUrl('classpath://postproductdeliverydetailprocessapplicationjsondeliveryprocapiconfigtestsuccess\set-event_attributes.dwl')]" />
+				<munit:variables >
+					<munit:variable key="outboundHeaders" value="#[readUrl('classpath://postproductdeliverydetailprocessapplicationjsondeliveryprocapiconfigtestsuccess\set-event_variable_.dwl')]" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to post:\product\delivery-detail\process:application\json:delivery-proc-api-config" doc:id="ece8571b-0a5f-435d-84bf-88e7d5e84b55" name="post:\product\delivery-detail\process:application\json:delivery-proc-api-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="17e889f3-4bd2-4c26-b830-38aac2bd36a8" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import postproductdeliverydetailprocessapplicationjsondeliveryprocapiconfigtestsuccess::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="delivery-proc-api-main-test-success" doc:id="31b24a3b-5426-4875-a70d-b0183364b95d" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock APIkit Router" doc:id="d50f266b-9859-437a-94b0-b492fb818a0f" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="9daa1e58-c65f-40ab-b7b1-e9ed55516375" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json --- readUrl('classpath://deliveryprocapimaintestsuccess\mock_payload.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					<munit-tools:attributes value="#[readUrl('classpath://deliveryprocapimaintestsuccess\mock_attributes.dwl')]" />
+					<munit-tools:variables >
+						<munit-tools:variable key="usItemId" value="#[output application/json --- readUrl('classpath://deliveryprocapimaintestsuccess\mock_variable_.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="quantity" value="#[output application/json --- readUrl('classpath://deliveryprocapimaintestsuccess\mock_variable_1.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="outboundHeaders" value="#[readUrl('classpath://deliveryprocapimaintestsuccess\mock_variable_2.dwl')]" />
+						<munit-tools:variable key="httpStatus" value="#[readUrl('classpath://deliveryprocapimaintestsuccess\mock_variable_3.dwl')]" />
+						<munit-tools:variable key="storePayload" value="#[output application/json --- readUrl('classpath://deliveryprocapimaintestsuccess\mock_variable_4.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="postalCode" value="#[output application/json --- readUrl('classpath://deliveryprocapimaintestsuccess\mock_variable_5.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="storeDetails" value="#[output application/json --- readUrl('classpath://deliveryprocapimaintestsuccess\mock_variable_6.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="productDetails" value="#[output application/json --- readUrl('classpath://deliveryprocapimaintestsuccess\mock_variable_7.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="storeOpenHrs" value="#[output application/java --- readUrl('classpath://deliveryprocapimaintestsuccess\mock_variable_8.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="ed9de900-762b-4bfa-8291-f651f1c267bb" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://deliveryprocapimaintestsuccess\set-event_payload2.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				<munit:attributes value="#[readUrl('classpath://deliveryprocapimaintestsuccess\set-event_attributes2.dwl')]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to delivery-proc-api-main" doc:id="7f65e156-a56b-44f2-9f2c-fd1e7c81eca5" name="delivery-proc-api-main"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="9a322bfc-cd7d-46ac-81db-68e38a08979b" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import deliveryprocapimaintestsuccess::assert_expression_payload2
+---
+assert_expression_payload2::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

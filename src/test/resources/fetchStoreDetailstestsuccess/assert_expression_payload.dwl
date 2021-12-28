@@ -1,0 +1,37 @@
+%dw 2.0
+import * from dw::test::Asserts
+---
+payload must equalTo({
+  "distance": 0.51,
+  "id": 4376,
+  "displayName": "Bentonville Neighborhood Market",
+  "storeType": {
+    "id": "4",
+    "displayName": "Neighborhood Market"
+  },
+  "address": {
+    "postalCode": "72712",
+    "address": "1400 N Walton Blvd",
+    "city": "Bentonville",
+    "state": "AR",
+    "country": "US"
+  },
+  "operationalHours": {
+    "open24Hours": null,
+    "todayHrs": {
+      "startHr": "06:00",
+      "endHr": "23:00",
+      "openFullDay": null
+    },
+    "tomorrowHrs": {
+      "startHr": "06:00",
+      "endHr": "23:00",
+      "openFullDay": null
+    }
+  },
+  "geoPoint": {
+    "latitude": 36.389152,
+    "longitude": -94.219316
+  },
+  "timeZone": "America/Chicago"
+})

@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_92b51cfc_b7d6_476a_8bde_7d5f839aa46d_Input_Variables_quantity = String | Null
+

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<global-property doc:name="Global Property" doc:id="778ba216-45f9-4750-bb8e-e8d4531e1e59" name="env" value="dev" />
+	<configuration-properties doc:name="Configuration properties" doc:id="28866691-27c1-464d-8d86-2c8dd4f93d16" file="config-${env}.yaml" />
+	<http:request-config name="Walmart_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="436b7876-d2ad-4817-b5e9-b6f787c6a962" >
+		<http:request-connection host="${http.request.host}" port="${http.request.port}" protocol="HTTPS"/>
+	</http:request-config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="a1386254-54eb-4624-b065-dff10c474cad" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
+	</http:listener-config>
+	<http:request-config name="DB_Server_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="c110026c-1a69-4678-bf2b-f040c268860d" responseTimeout="30000000">
+		<http:request-connection host="${db.server.host}" port="${db.server.port}" connectionIdleTimeout="30000000"/>
+	</http:request-config>
+	<configuration doc:name="Configuration" doc:id="20d95e94-97f0-48c6-9c21-7f4009ef9fad" defaultErrorHandler-ref="globalError_Handler" />
+	<error-handler name="globalError_Handler" doc:id="003a35b5-c393-4f81-92b1-db8e5fb6554c" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="9a3926ab-8fa1-45b6-8936-49e6fe3a3c5a" type="APP:INVALID_POSTALCODE,APP:INVALID_PARAM">
+			<ee:transform doc:name="Error Message" doc:id="8575d974-37d7-4b79-9382-a68d6f01151f" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="12c58ad5-f03c-44e1-98e9-01af96ee23ed" type="APP:PRODUCT_DETAILS,APP:STORE_DETAILS">
+			<ee:transform doc:name="Error Message" doc:id="8218c4c0-57d3-4ba0-9b8e-31dd5a5935d2" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="da91c07a-de9d-4e01-8b76-b5bf66a55134" type="ANY">
+			<ee:transform doc:name="Error Message" doc:id="58bad33c-e24e-4bf2-bb4f-c60bbfd75d9e" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+	</error-handler>
+</mule>

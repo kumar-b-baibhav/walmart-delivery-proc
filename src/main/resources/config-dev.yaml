@@ -1,0 +1,19 @@
+http: 
+  port: "8084"
+  request:
+    host: "walmart.p.rapidapi.com"
+    port: ""
+    productDetail:
+      path: "/products/v3/get-details"
+    storeDetail:
+      path: "/stores/list"
+    headers:
+      X-RapidAPI-Key: 3023a67861msh0eb707c9fd31682p12e9c9jsn4bd95787f3d4
+      X-RapidAPI-Host: walmart.p.rapidapi.com
+db:
+  server:
+    host: "delivery-sys-api.us-e2.cloudhub.io"
+    port: ""
+    deliveryDetail:
+      insert:
+        path: "/api/delivery-detail/insert"

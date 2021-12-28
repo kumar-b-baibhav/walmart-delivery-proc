@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<flow name="processDelivery" doc:id="afa1c3e0-269b-4ebd-8fe6-064c598369e4" >
+		<set-variable value="#[payload.usItemId]" doc:name="usItemId" doc:id="9abee134-adc7-4d5e-935b-efb94e8ac1ae" variableName="usItemId"/>
+		<set-variable value="#[payload.quantity]" doc:name="quantity" doc:id="4a316e1e-ed61-4463-a345-7686134dc809" variableName="quantity"/>
+		<http:request method="GET" doc:name="Request/ProductDetails" doc:id="c86545a4-627e-4a2c-8b20-263ef5308eca" target="productDetails" config-ref="Walmart_HTTP_Request_configuration" path="${http.request.productDetail.path}">
+			<error-mapping targetType="APP:PRODUCT_DETAILS" />
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"X-RapidAPI-Host" : p('http.request.headers.X-RapidAPI-Host'),
+	"X-RapidAPI-Key" : p('http.request.headers.X-RapidAPI-Key')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"usItemId" : vars.usItemId
+}]]]></http:query-params>
+		</http:request>
+		<validation:is-true doc:name="validUsItemId" doc:id="beb86eb1-85f1-4ac7-bc61-70725fb49a44" expression='#[if (vars.productDetails.errors[0].message != "404") true else false]' message="#['usItemId' ++ ' ' ++ vars.usItemId ++ ' ' ++ 'is incorrect. Please enter valid usItemId']">
+			<error-mapping sourceType="VALIDATION:INVALID_BOOLEAN" targetType="APP:INVALID_PARAM" />
+		</validation:is-true>
+		<set-variable value="#[vars.productDetails.data.product.location.postalCode]" doc:name="postalCode" doc:id="95fbf5d6-2001-47e9-a31e-8f0c3867bbbb" variableName="postalCode"/>
+		<validation:is-true doc:name="validPostalCode" doc:id="9df61a89-3fd2-488e-879f-3947d3a96e2b" expression="#[!isEmpty(vars.postalCode)]" message="Enter valid postal code">
+			<error-mapping sourceType="VALIDATION:INVALID_BOOLEAN" targetType="APP:INVALID_POSTALCODE" />
+		</validation:is-true>
+		<flow-ref doc:name="fetchStoreDetails" doc:id="7d4c3c0a-297f-4ac0-ad96-a73de44ca580" name="fetchStoreDetails"/>
+		<flow-ref doc:name="insertDeliveryDetails" doc:id="3f3372ab-ed81-46cb-a872-cd7d37ff2f80" name="insertDeliveryDetails"/>
+		<logger level="INFO" doc:name="Logger" doc:id="37f98e8c-a7c7-4daa-b943-c563467ec757" message="#[payload]"/>
+	</flow>
+	<sub-flow name="fetchStoreDetails" doc:id="92b51cfc-b7d6-476a-8bde-7d5f839aa46d" >
+		<http:request method="GET" doc:name="Request/storeList" doc:id="4b015fb7-aba8-4896-abc7-c100b28df6a9" config-ref="Walmart_HTTP_Request_configuration" path="${http.request.storeDetail.path}" target="storeDetails">
+			<error-mapping targetType="APP:STORE_DETAILS" />
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"X-RapidAPI-Host" : p('http.request.headers.X-RapidAPI-Host'),
+	"X-RapidAPI-Key" : p('http.request.headers.X-RapidAPI-Key')
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	"postalCode" : vars.postalCode
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="openAndMin" doc:id="34440198-53a9-4244-868f-2f054d322834">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+//var distanceArray = payload.data.storesBySearchTerm.stores..distance
+//var list = payload.data.storesBySearchTerm.stores
+var distanceArray = vars.storeDetails.data.storesBySearchTerm.stores..distance default []
+var list = vars.storeDetails.data.storesBySearchTerm.stores
+var storesOpen24Hours = list filter ((obj, ind) -> (
+		obj.operationalHours.open24Hours != null
+))
+---
+if (isEmpty(storesOpen24Hours))
+	(list filter((object, index) -> (
+		object.distance == min(distanceArray)
+		)
+	))[0]
+else
+	(list filter
+	((object, index) -> (
+		object.distance == min(storesOpen24Hours..distance)
+		)
+	))[0]]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="storeOpenHrs" ><![CDATA[%dw 2.0
+output application/java
+//var list = payload.data.storesBySearchTerm.stores
+var list = vars.storeDetails.data.storesBySearchTerm.stores
+var storesOpen24Hours = list filter ((obj, ind) -> (
+		obj.operationalHours.open24Hours != null
+))
+---
+if (isEmpty(storesOpen24Hours))
+{
+	message: "None of the stores are 24 hours open. Please find below the nearest store"
+}
+else
+{
+	message: "Stores are 24 hours open"
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="payload" doc:id="b14fe1a4-1c8e-488a-a983-af8be33c949e">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+
+payload
+	]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="storePayload" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	store_id: payload.id as Number default 0,
+	store_name: payload.displayName as String,
+	store_address: payload.address.address as String ++ ", " ++
+					payload.address.city as String ++ ", " ++
+					payload.address.state as String ++ ", " ++
+					payload.address.country as String ++ "(" ++ payload.address.postalCode ++ ")",
+	store_distance: payload.distance as String {format:"##.##"} as Number,
+	store_contact_number: payload.contact as Number default 987654321,
+	product_type_id: vars.productDetails.data.product.productTypeId,
+	quantity: vars.quantity as Number
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="1dd10de1-9208-4ab8-82fa-ea47263b162d" />
+	</sub-flow>
+	<sub-flow name="insertDeliveryDetails" doc:id="eb631e04-f149-4912-a706-a2376d2c9311" >
+		<http:request method="POST" doc:name="Request/dbInsert" doc:id="7578c44b-7462-4e0e-8470-eccd212b626f" config-ref="DB_Server_HTTP_Request_configuration" path="${db.server.deliveryDetail.insert.path}" >
+			<error-mapping targetType="APP:DELIVERY_DETAILS" />
+			<http:body ><![CDATA[#[vars.storePayload]]]></http:body>
+		</http:request>
+		<set-payload value='#[output application/json&#10;---&#10;{&#10;	message: "Record added",&#10;	storeinfo: vars.storeOpenHrs&#10;&#10;} ++ vars.storePayload as Object]' doc:name="successMessage" doc:id="4af809be-ab4d-469f-bba1-582a4b4fbd8e" />
+	</sub-flow>
+</mule>
