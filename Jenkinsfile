@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('Code Checkout') {
       steps {
-	    git credentialsId: '4b22c39f-9efb-4a4f-9662-d23339dc978a', url: 'https://github.com/kumar-b-baibhav/book-my-holiday-flights-sys'
+	    git credentialsId: '77a296bf-7451-4a38-b064-3c1d88a1b74e', url: 'https://github.com/kumar-b-baibhav/walmart-delivery-proc'
       }
     }
     stage('Build') {
